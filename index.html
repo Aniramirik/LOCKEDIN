@@ -13,226 +13,227 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <style>
 /* Global Styles */
-body {
-  margin: 0;
-  font-family: sans-serif;
-  background: #f5faff;
-  color: #222;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px;
-}
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: #f5faff;
+      color: #222;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      box-sizing: border-box;
+    }
 
-h1 {
-  color: #007BFF;
-  font-size: 2em;
-  margin-bottom: 20px;
-}
+    h1 {
+      color: #007BFF;
+      font-size: 2em;
+      margin-bottom: 20px;
+    }
 
-input,
-button,
-select {
-  padding: 10px;
-  margin: 5px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 1em;
-  width: 100%;
-}
+    input,
+    button,
+    select {
+      padding: 10px;
+      margin: 5px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 1em;
+      width: 100%;
+      box-sizing: border-box;
+    }
 
-#chat,
-#agreement {
-  max-width: 600px;
-  width: 100%;
-  margin-top: 20px;
-}
+    #chat,
+    #agreement {
+      max-width: 600px;
+      width: 100%;
+      margin-top: 20px;
+    }
 
-#messages {
-  height: 300px;
-  overflow-y: scroll;
-  border: 1px solid #ccc;
-  padding: 10px;
-  background: #fff;
-  border-radius: 10px;
-}
+    #messages {
+      height: 300px;
+      overflow-y: scroll;
+      border: 1px solid #ccc;
+      padding: 10px;
+      background: #fff;
+      border-radius: 10px;
+    }
 
-/* Suggestion Section */
-.suggestion-section {
-  margin-top: 30px;
-  padding: 20px;
-  background-color: #ffffff;
-  border-radius: 10px;
-  border: 1px solid #ddd;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 600px;
-}
+    /* Suggestion Section */
+    .suggestion-section {
+      margin-top: 30px;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 600px;
+    }
 
-.suggestion-section h2 {
-  color: #007BFF;
-  font-size: 1.2em;
-  margin-bottom: 15px;
-}
+    .suggestion-section h2 {
+      color: #007BFF;
+      font-size: 1.2em;
+      margin-bottom: 15px;
+    }
 
-.suggestion {
-  font-size: 1.1em;
-  color: #007BFF;
-  cursor: pointer;
-  padding: 8px 12px;
-  margin: 8px 0;
-  background-color: #f1f9ff;
-  border: 1px solid #007BFF;
-  border-radius: 6px;
-  transition: background-color 0.3s, transform 0.2s;
-}
+    .suggestion {
+      font-size: 1.1em;
+      color: #007BFF;
+      cursor: pointer;
+      padding: 8px 12px;
+      margin: 8px 0;
+      background-color: #f1f9ff;
+      border: 1px solid #007BFF;
+      border-radius: 6px;
+      transition: background-color 0.3s, transform 0.2s;
+    }
 
-.suggestion:hover {
-  background-color: #007BFF;
-  color: white;
-  transform: scale(1.05);
-}
+    .suggestion:hover {
+      background-color: #007BFF;
+      color: white;
+      transform: scale(1.05);
+    }
 
-.suggestion:active {
-  background-color: #0056b3;
-  transform: scale(1);
-}
+    .suggestion:active {
+      background-color: #0056b3;
+      transform: scale(1);
+    }
 
-/* Layout Adjustments */
-#setup,
-#agreement,
-#chat {
-  width: 100%;
-  max-width: 600px;
-  text-align: center;
-}
+    /* Layout Adjustments */
+    #setup,
+    #agreement,
+    #chat {
+      width: 100%;
+      max-width: 600px;
+      text-align: center;
+    }
 
-#setup input,
-#setup select {
-  width: 100%;
-}
+    #setup input,
+    #setup select {
+      width: 100%;
+    }
 
-#msg {
-  width: 80%;
-  margin-right: 10px;
-}
+    #msg {
+      width: 80%;
+      margin-right: 10px;
+    }
 
-#roomHeader {
-  font-size: 1.5em;
-  margin-bottom: 15px;
-  color: #007BFF;
-}
+    #roomHeader {
+      font-size: 1.5em;
+      margin-bottom: 15px;
+      color: #007BFF;
+    }
 
-#messages {
-  margin-top: 15px;
-  padding: 15px;
-  background-color: #fff;
-  border-radius: 10px;
-  border: 1px solid #ddd;
-}
+    #messages {
+      margin-top: 15px;
+      padding: 15px;
+      background-color: #fff;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+    }
 
-/* Button Styles */
-button {
-  width: 100%;
-  background-color: #007BFF;
-  color: white;
-  border: none;
-  padding: 15px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
+    /* Button Styles */
+    button {
+      width: 100%;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      padding: 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
 
-button:hover {
-  background-color: #0056b3;
-}
+    button:hover {
+      background-color: #0056b3;
+    }
 
-/* Responsive Design: Adjusting for mobile and tablet views */
+    /* Responsive Design: Adjusting for mobile and tablet views */
 
-/* For Mobile (screen width <= 600px) */
-@media (max-width: 600px) {
-  h1 {
-    font-size: 1.8em;
-  }
+    /* For Mobile (screen width <= 600px) */
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 1.8em;
+      }
 
-  .suggestion-section {
-    padding: 15px;
-  }
+      .suggestion-section {
+        padding: 15px;
+      }
 
-  .suggestion {
-    font-size: 1em;
-    padding: 6px 10px;
-  }
+      .suggestion {
+        font-size: 1em;
+        padding: 6px 10px;
+      }
 
-  #msg {
-    width: 70%;
-  }
+      #msg {
+        width: 70%;
+      }
 
-  button {
-    padding: 12px;
-  }
-}
+      button {
+        padding: 12px;
+      }
+    }
 
-/* For Tablets (screen width <= 768px) */
-@media (max-width: 768px) {
-  h1 {
-    font-size: 1.9em;
-  }
+    /* For Tablets (screen width <= 768px) */
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 1.9em;
+      }
 
-  .suggestion-section {
-    padding: 18px;
-  }
+      .suggestion-section {
+        padding: 18px;
+      }
 
-  .suggestion {
-    font-size: 1.1em;
-    padding: 7px 11px;
-  }
+      .suggestion {
+        font-size: 1.1em;
+        padding: 7px 11px;
+      }
 
-  #msg {
-    width: 75%;
-  }
+      #msg {
+        width: 75%;
+      }
 
-  button {
-    padding: 14px;
-  }
-}
+      button {
+        padding: 14px;
+      }
+    }
 
-/* For Larger Screens (screen width > 768px) */
-@media (min-width: 769px) {
-  .suggestion-section {
-    width: 80%;
-  }
+    /* For Larger Screens (screen width > 768px) */
+    @media (min-width: 769px) {
+      .suggestion-section {
+        width: 80%;
+      }
 
-  .suggestion {
-    font-size: 1.1em;
-    padding: 8px 12px;
-  }
-}
+      .suggestion {
+        font-size: 1.1em;
+        padding: 8px 12px;
+      }
+    }
 
-/* For Extra Large Screens (screen width > 1200px) */
-@media (min-width: 1200px) {
-  .suggestion-section {
-    width: 60%;
-  }
+    /* For Extra Large Screens (screen width > 1200px) */
+    @media (min-width: 1200px) {
+      .suggestion-section {
+        width: 60%;
+      }
 
-  h1 {
-    font-size: 2.2em;
-  }
+      h1 {
+        font-size: 2.2em;
+      }
 
-  .suggestion {
-    font-size: 1.2em;
-    padding: 9px 14px;
-  }
+      .suggestion {
+        font-size: 1.2em;
+        padding: 9px 14px;
+      }
 
-  #msg {
-    width: 85%;
-  }
+      #msg {
+        width: 85%;
+      }
 
-  button {
-    padding: 16px;
-  }
-}
-
+      button {
+        padding: 16px;
+      }
+    }
   </style>
 </head>
 <body>
