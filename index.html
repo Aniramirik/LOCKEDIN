@@ -123,93 +123,125 @@
     <input id="msg" placeholder="Type a message..." />
     <button onclick="sendMessage()">Send</button>
   </div>
+    <script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyAe0j-iB4gapzSq1zy2a6j4kwaET8JXZ_8",
+    authDomain: "nopeeking-e272a.firebaseapp.com",
+    databaseURL: "https://nopeeking-e272a-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "nopeeking-e272a",
+    storageBucket: "nopeeking-e272a.appspot.com",
+    messagingSenderId: "193204663242",
+    appId: "1:193204663242:web:46523ab13715b022b09533"
+  };
 
-  <script>
-    // Firebase config
-    const firebaseConfig = {
-      apiKey: "AIzaSyAe0j-iB4gapzSq1zy2a6j4kwaET8JXZ_8",
-      authDomain: "nopeeking-e272a.firebaseapp.com",
-      databaseURL: "https://nopeeking-e272a-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "nopeeking-e272a",
-      storageBucket: "nopeeking-e272a.appspot.com",
-      messagingSenderId: "193204663242",
-      appId: "1:193204663242:web:46523ab13715b022b09533"
-    };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  const auth = firebase.auth();
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const auth = firebase.auth();
+  let currentRoom = "";
+  let currentUser = "";
+  let currentUID = "";
 
-    let currentRoom = "";
-    let currentUser = "";
+  function setRoomSuggestion(name) {
+    document.getElementById("roomName").value = name;
+  }
 
-    function setRoomSuggestion(name) {
-      document.getElementById("roomName").value = name;
-    }
+  function loginWithGoogle() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider)
+      .then(async (result) => {
+        const user = result.user;
+        currentUID = user.uid;
 
-    function loginWithGoogle() {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider)
-        .then((result) => {
-          currentUser = result.user.displayName;
+        // Check if username already exists
+        const snap = await db.ref(`users/${currentUID}/username`).once("value");
+        if (snap.exists()) {
+          currentUser = snap.val();
           alert("Signed in as " + currentUser);
           document.getElementById("username").style.display = "none";
-        })
-        .catch((error) => {
-          console.error("Login failed:", error.message);
-        });
+        } else {
+          chooseGoogleUsername();
+        }
+      })
+      .catch((error) => {
+        console.error("Login failed:", error.message);
+        alert(error.message);
+      });
+  }
+
+  function chooseGoogleUsername() {
+    const chosen = prompt("Choose your permanent username:");
+    if (!chosen || !/^[a-zA-Z0-9_]+$/.test(chosen)) {
+      alert("Invalid username. Use only letters, numbers, and underscores.");
+      return chooseGoogleUsername();
     }
 
-    function checkAgreement() {
-      if (!currentUser) {
-        const inputName = document.getElementById("username").value.trim();
-        currentUser = inputName || "Anon" + Math.floor(Math.random() * 10000);
+    const usernameRef = db.ref(`usernames/${chosen}`);
+    usernameRef.once("value", (snap) => {
+      if (snap.exists()) {
+        alert("Username is taken. Try another.");
+        chooseGoogleUsername();
+      } else {
+        usernameRef.set(currentUID);
+        db.ref(`users/${currentUID}`).set({ username: chosen });
+        currentUser = chosen;
+        alert("Username saved as: " + currentUser);
+        document.getElementById("username").style.display = "none";
       }
+    });
+  }
 
-      document.getElementById("setup").style.display = "none";
-      document.getElementById("agreement").style.display = "block";
+  function checkAgreement() {
+    if (!currentUser) {
+      const inputName = document.getElementById("username").value.trim();
+      currentUser = inputName || "Anon" + Math.floor(Math.random() * 10000);
     }
 
-    function createOrJoinRoom() {
-      const roomName = document.getElementById("roomName").value.trim();
-      const password = document.getElementById("roomPassword").value;
-      const type = document.getElementById("roomType").value;
+    document.getElementById("setup").style.display = "none";
+    document.getElementById("agreement").style.display = "block";
+  }
 
-      if (!roomName) return alert("Please enter a room name!");
-      if (type === "private" && !password) return alert("Private rooms need a password.");
+  function createOrJoinRoom() {
+    const roomName = document.getElementById("roomName").value.trim();
+    const password = document.getElementById("roomPassword").value;
+    const type = document.getElementById("roomType").value;
 
-      currentRoom = roomName;
-      document.getElementById("roomHeader").innerText = "Room: " + currentRoom;
-      document.getElementById("agreement").style.display = "none";
-      document.getElementById("chat").style.display = "block";
+    if (!roomName) return alert("Please enter a room name!");
+    if (type === "private" && !password) return alert("Private rooms need a password.");
 
-      loadMessages();
-    }
+    currentRoom = roomName;
+    document.getElementById("roomHeader").innerText = "Room: " + currentRoom;
+    document.getElementById("agreement").style.display = "none";
+    document.getElementById("chat").style.display = "block";
 
-    function sendMessage() {
-      const text = document.getElementById("msg").value.trim();
-      if (!text) return;
-      db.ref(`rooms/${currentRoom}`).push({
-        user: currentUser,
-        message: text,
-        timestamp: Date.now()
+    loadMessages();
+  }
+
+  function sendMessage() {
+    const text = document.getElementById("msg").value.trim();
+    if (!text) return;
+    db.ref(`rooms/${currentRoom}`).push({
+      user: currentUser,
+      message: text,
+      timestamp: Date.now()
+    });
+    document.getElementById("msg").value = "";
+  }
+
+  function loadMessages() {
+    const container = document.getElementById("messages");
+    db.ref(`rooms/${currentRoom}`).on("value", snap => {
+      container.innerHTML = "";
+      snap.forEach(child => {
+        const data = child.val();
+        const msg = document.createElement("div");
+        msg.innerHTML = `<strong>${data.user}:</strong> ${data.message}`;
+        container.appendChild(msg);
       });
-      document.getElementById("msg").value = "";
-    }
+      container.scrollTop = container.scrollHeight;
+    });
+  }
+</script>
 
-    function loadMessages() {
-      const container = document.getElementById("messages");
-      db.ref(`rooms/${currentRoom}`).on("value", snap => {
-        container.innerHTML = "";
-        snap.forEach(child => {
-          const data = child.val();
-          const msg = document.createElement("div");
-          msg.innerHTML = `<strong>${data.user}:</strong> ${data.message}`;
-          container.appendChild(msg);
-        });
-        container.scrollTop = container.scrollHeight;
-      });
-    }
-  </script>
 </body>
 </html>
