@@ -5,54 +5,41 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LOCKEDIN</title>
 
-  <!-- PWA Meta Tags -->
-  <link rel="manifest" href="manifest.json">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="LOCKEDIN">
-  <link rel="apple-touch-icon" href="LOCKEDIN.png">
-
-  <!-- Firebase SDK -->
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 
   <style>
     body {
-      margin: 0;
       font-family: sans-serif;
-      background: #f5faff;
-      color: #222;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
       padding: 20px;
-      box-sizing: border-box;
+      background: #f5faff;
+      text-align: center;
     }
 
     h1 {
       color: #007BFF;
-      font-size: 1.8em;
-      margin-bottom: 20px;
-      text-align: center;
     }
 
     input, button, select {
+      width: 90%;
+      max-width: 400px;
+      margin: 8px auto;
       padding: 12px;
-      margin: 8px 0;
-      width: 100%;
       font-size: 1em;
       border: 1px solid #ccc;
       border-radius: 8px;
-      box-sizing: border-box;
+      display: block;
     }
 
     button {
       background-color: #007BFF;
       color: white;
       font-weight: bold;
-      border: none;
       cursor: pointer;
-      transition: background 0.3s;
+      transition: 0.3s;
+      border: none;
     }
 
     button:hover {
@@ -60,69 +47,54 @@
     }
 
     #messages {
+      max-width: 400px;
       height: 250px;
+      margin: 15px auto;
       overflow-y: auto;
-      border: 1px solid #ccc;
-      background: #fff;
+      background: white;
       padding: 10px;
       border-radius: 8px;
-      margin: 15px 0;
+      border: 1px solid #ccc;
+      text-align: left;
     }
 
     .suggestion {
+      background: #e0f0ff;
       color: #007BFF;
+      margin: 5px auto;
       padding: 10px;
-      margin: 5px 0;
-      background-color: #f0f8ff;
+      max-width: 400px;
       border-radius: 6px;
       cursor: pointer;
-      text-align: center;
       border: 1px solid #007BFF;
-      transition: 0.2s;
     }
 
     .suggestion:hover {
-      background-color: #007BFF;
+      background: #007BFF;
       color: white;
     }
 
-    #setup, #agreement, #chat {
-      width: 100%;
-      max-width: 480px;
-    }
-
     #msg {
-      width: 75%;
-      margin-right: 5px;
+      width: 70%;
     }
 
-    #roomHeader {
-      font-size: 1.2em;
-      margin-bottom: 10px;
-      color: #007BFF;
+    #googleBtn {
+      background: #db4437;
     }
 
     @media (max-width: 480px) {
-      h1 {
-        font-size: 1.5em;
-      }
-
-      button {
-        padding: 10px;
-      }
-
       #msg {
-        width: 65%;
+        width: 60%;
       }
     }
   </style>
 </head>
-
 <body>
   <h1>🔐 LOCKEDIN</h1>
 
   <div id="setup">
-    <input id="username" placeholder="Username (or leave blank)" />
+    <button id="googleBtn" onclick="loginWithGoogle()">Sign in with Google</button>
+    <input id="username" placeholder="Or type username (optional)" />
     <input id="roomName" placeholder="Room name" />
     <select id="roomType">
       <option value="public">Public</option>
@@ -131,35 +103,29 @@
     <input id="roomPassword" placeholder="Password (if private)" type="password" />
     <button onclick="checkAgreement()">Join Room</button>
 
-    <div>
-      <p><strong>Suggested Rooms:</strong></p>
-      <div class="suggestion" onclick="setRoomSuggestion('Politics')">Politics</div>
-      <div class="suggestion" onclick="setRoomSuggestion('Gaming')">Gaming</div>
-      <div class="suggestion" onclick="setRoomSuggestion('Tech')">Tech</div>
-      <div class="suggestion" onclick="setRoomSuggestion('Sports')">Sports</div>
-      <div class="suggestion" onclick="setRoomSuggestion('Movies')">Movies</div>
-    </div>
+    <p><strong>Suggestions:</strong></p>
+    <div class="suggestion" onclick="setRoomSuggestion('Politics')">Politics</div>
+    <div class="suggestion" onclick="setRoomSuggestion('Gaming')">Gaming</div>
+    <div class="suggestion" onclick="setRoomSuggestion('Tech')">Tech</div>
+    <div class="suggestion" onclick="setRoomSuggestion('Sports')">Sports</div>
+    <div class="suggestion" onclick="setRoomSuggestion('Movies')">Movies</div>
   </div>
 
   <div id="agreement" style="display:none;">
     <h3>Terms of Use</h3>
-    <p>
-      By clicking "Accept", you agree that all messages are your own responsibility.
-      LOCKEDIN is not responsible for user content.
-    </p>
+    <p>By clicking Accept, you agree you are responsible for your messages. LOCKEDIN is not liable for content shared by users.</p>
     <button onclick="createOrJoinRoom()">Accept & Continue</button>
   </div>
 
   <div id="chat" style="display:none;">
     <h2 id="roomHeader"></h2>
     <div id="messages"></div>
-    <div style="display: flex; width: 100%;">
-      <input id="msg" placeholder="Type a message..." />
-      <button onclick="sendMessage()">Send</button>
-    </div>
+    <input id="msg" placeholder="Type a message..." />
+    <button onclick="sendMessage()">Send</button>
   </div>
 
   <script>
+    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyAe0j-iB4gapzSq1zy2a6j4kwaET8JXZ_8",
       authDomain: "nopeeking-e272a.firebaseapp.com",
@@ -167,12 +133,12 @@
       projectId: "nopeeking-e272a",
       storageBucket: "nopeeking-e272a.appspot.com",
       messagingSenderId: "193204663242",
-      appId: "1:193204663242:web:46523ab13715b022b09533",
-      measurementId: "G-BM1EF4526F"
+      appId: "1:193204663242:web:46523ab13715b022b09533"
     };
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+    const auth = firebase.auth();
 
     let currentRoom = "";
     let currentUser = "";
@@ -181,25 +147,36 @@
       document.getElementById("roomName").value = name;
     }
 
+    function loginWithGoogle() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider)
+        .then((result) => {
+          currentUser = result.user.displayName;
+          alert("Signed in as " + currentUser);
+          document.getElementById("username").style.display = "none";
+        })
+        .catch((error) => {
+          console.error("Login failed:", error.message);
+        });
+    }
+
     function checkAgreement() {
-      currentUser = document.getElementById("username").value.trim();
       if (!currentUser) {
-        currentUser = "Anon" + Math.floor(Math.random() * 1000);
+        const inputName = document.getElementById("username").value.trim();
+        currentUser = inputName || "Anon" + Math.floor(Math.random() * 10000);
       }
+
       document.getElementById("setup").style.display = "none";
       document.getElementById("agreement").style.display = "block";
     }
 
     function createOrJoinRoom() {
       const roomName = document.getElementById("roomName").value.trim();
-      const roomPassword = document.getElementById("roomPassword").value;
-      const roomType = document.getElementById("roomType").value;
+      const password = document.getElementById("roomPassword").value;
+      const type = document.getElementById("roomType").value;
 
-      if (!roomName) return alert("Enter a room name!");
-
-      if (roomType === "private" && !roomPassword) {
-        return alert("Password required for private rooms.");
-      }
+      if (!roomName) return alert("Please enter a room name!");
+      if (type === "private" && !password) return alert("Private rooms need a password.");
 
       currentRoom = roomName;
       document.getElementById("roomHeader").innerText = "Room: " + currentRoom;
@@ -210,30 +187,29 @@
     }
 
     function sendMessage() {
-      const msg = document.getElementById("msg").value.trim();
-      if (!msg) return;
+      const text = document.getElementById("msg").value.trim();
+      if (!text) return;
       db.ref(`rooms/${currentRoom}`).push({
         user: currentUser,
-        message: msg,
+        message: text,
         timestamp: Date.now()
       });
       document.getElementById("msg").value = "";
     }
 
     function loadMessages() {
-      const msgContainer = document.getElementById("messages");
-      db.ref(`rooms/${currentRoom}`).on("value", snapshot => {
-        msgContainer.innerHTML = "";
-        snapshot.forEach(child => {
+      const container = document.getElementById("messages");
+      db.ref(`rooms/${currentRoom}`).on("value", snap => {
+        container.innerHTML = "";
+        snap.forEach(child => {
           const data = child.val();
-          const div = document.createElement("div");
-          div.innerHTML = `<strong>${data.user}:</strong> ${data.message}`;
-          msgContainer.appendChild(div);
+          const msg = document.createElement("div");
+          msg.innerHTML = `<strong>${data.user}:</strong> ${data.message}`;
+          container.appendChild(msg);
         });
-        msgContainer.scrollTop = msgContainer.scrollHeight;
+        container.scrollTop = container.scrollHeight;
       });
     }
   </script>
 </body>
 </html>
-
